@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishing Garden</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+
+  <div class="relative min-h-screen bg-cover bg-center" 
+      style="background-image: url('assets/wising_sky_bg.jpg');">
+
+  
+    <div class="container">
+            
+      <!--  Car Image-->
+      <div class="box blue" role="region" id="Flower">
+        <img src="assets/car_img.png" alt="Flower" class="box-image">
+      </div>
+
+      <div class="box spark" role="region" id="spark">
+        <img src="assets/spark.gif" alt="Spark" class="box-image">  
+      </div>
+
+      <!-- Wish Input -->
+      <div class="box green" role="region" id="Box1">
+        <textarea id="wishInput" class="wish-input" placeholder="Write your wish here..."></textarea>
+      </div>
+
+      <!-- Add Wish Button -->
+      <div class="box red" role="region" id="addWishBtn">
+        <img src="assets/box_add_wish.png" alt="Add" class="box-image">
+      </div>
+
+      <!-- New Wish -->
+      <div id="wish-list" class="wish-list"></div>
+
+      <!-- Error Message -->
+      <p id="errorMsg" class="error-msg"></p>
+    </div> 
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC75btnzJKkhJOUyObL-twK91fpeyED-II",
+      authDomain: "wishing-garden.firebaseapp.com",
+      projectId: "wishing-garden",
+      storageBucket: "wishing-garden.firebasestorage.app",
+      messagingSenderId: "1079909099320",
+      appId: "1:1079909099320:web:e95ddd3ed4fd1fe80003cd"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
+

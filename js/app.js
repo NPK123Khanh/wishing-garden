@@ -11,6 +11,12 @@ function containsBadWord(text) {
   return badWords.some(word => lowerText.includes(word));
 }
 
+// 🔹 LOAD 3 MOST RECENT WISHES WHEN PAGE OPENS
+window.addEventListener("DOMContentLoaded", () => {
+  loadWishes();
+});
+
+// 🔹 ADD WISH HANDLER
 addBtn.addEventListener("click", async () => {
   const text = input.value.trim();
 
@@ -31,6 +37,7 @@ addBtn.addEventListener("click", async () => {
   try {
     const res = await fetch("/.netlify/functions/qc", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
     });
 
@@ -50,6 +57,7 @@ addBtn.addEventListener("click", async () => {
   try {
     const res = await fetch("/.netlify/functions/addWish", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
     });
 
@@ -65,12 +73,39 @@ addBtn.addEventListener("click", async () => {
     return;
   }
 
-  // 3. Render on screen
+  // 3. Render on screen (NEW WISH ON TOP)
   const wishItem = document.createElement("div");
   wishItem.className = "wish-item";
   wishItem.textContent = text;
 
   wishList.prepend(wishItem);
+
+  // 🔹 Keep only: new wish + 3 old = max 4
+  while (wishList.children.length > 4) {
+    wishList.removeChild(wishList.lastChild);
+  }
+
   input.value = "";
   errorMsg.textContent = "";
 });
+
+// 🔹 LOAD ONLY 3 MOST RECENT FROM DATABASE
+async function loadWishes() {
+  try {
+    const res = await fetch("/.netlify/functions/getWishes");
+    const data = await res.json();
+
+    wishList.innerHTML = "";
+
+    data.wishes.forEach(wish => {
+      const wishItem = document.createElement("div");
+      wishItem.className = "wish-item";
+      wishItem.textContent = wish.text;
+
+      wishList.appendChild(wishItem);
+    });
+
+  } catch (e) {
+    console.error("Failed to load wishes:", e);
+  }
+}

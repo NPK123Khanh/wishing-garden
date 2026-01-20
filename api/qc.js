@@ -1,49 +1,37 @@
 const fetch = require("node-fetch");
 
-exports.handler = async (event) => {
-  try {
-    const { text } = JSON.parse(event.body);
+const HF_API_URL = "https://router.huggingface.co/hf-inference/models/unitary/toxic-bert";
+const HF_TOKEN = process.env.HF_TOKEN;
 
-    const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/unitary/toxic-bert",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.HF_TOKEN}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ inputs: text })
-      }
-    );
+module.exports = async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    const response = await fetch(HF_API_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${HF_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inputs: text }),
+    });
 
     const result = await response.json();
-    console.log("HF RAW RESULT:", JSON.stringify(result, null, 2));
 
+    console.log("HF RAW RESULT:", JSON.stringify(result));
 
-    // Hugging Face returns an array of labels with scores
-    // We reject if toxicity > 0.7
-    const scores = result[0];
-    const toxic = scores.find(s => s.label === "toxic");
+    if (result.error) {
+      return res.status(500).json({ ok: false, error: result.error });
+    }
 
-    const isOk = !toxic || toxic.score < 0.7;
+    const predictions = result[0];
+    const toxic = predictions.find(p => p.label === "toxic");
+    const isBad = toxic && toxic.score > 0.7;
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        ok: isOk,
-        scores: scores
-      })
-    };
+    res.status(200).json({ ok: !isBad, predictions });
 
   } catch (err) {
     console.error("QC error:", err);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ ok: false, error: "QC failed" })
-    };
+    res.status(500).json({ ok: false, error: err.message });
   }
 };
-
-
-

@@ -5,13 +5,49 @@ const wishList = document.getElementById("wish-list");
 const errorMsg = document.getElementById("errorMsg");
 
 // List of banned words (customize this)
-const badWords = ["badword1", "badword2", "stupid", "hate"];
+const HF_API_TOKEN = "YOUR_HUGGINGFACE_TOKEN_HERE";
 
-// Function to check bad words
-function containsBadWord(text) {
-  const lowerText = text.toLowerCase();
-  return badWords.some(word => lowerText.includes(word));
+async function checkWithHuggingFace(text) {
+  const response = await fetch(
+    "https://api-inference.huggingface.co/models/unitary/toxic-bert",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${HF_API_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: text })
+    }
+  );
+
+  const result = await response.json();
+
+  // Example result format:
+  // [[{label: "toxic", score: 0.92}, {label: "insult", score: 0.85}, ...]]
+
+  if (!Array.isArray(result) || !Array.isArray(result[0])) {
+    // Model still loading or error → allow by default
+    return { ok: true, reason: "model_not_ready" };
+  }
+
+  const labels = result[0];
+
+  let toxicScore = 0;
+  let insultScore = 0;
+
+  labels.forEach(item => {
+    if (item.label === "toxic") toxicScore = item.score;
+    if (item.label === "insult") insultScore = item.score;
+  });
+
+  // You can tune these thresholds
+  if (toxicScore > 0.7 || insultScore > 0.7) {
+    return { ok: false, reason: "toxic" };
+  }
+
+  return { ok: true };
 }
+
 
 // Handle click
 addBtn.addEventListener("click", async () => {
@@ -22,8 +58,19 @@ addBtn.addEventListener("click", async () => {
     return;
   }
 
-  if (containsBadWord(text)) {
-    errorMsg.textContent = "Your wish contains inappropriate words.";
+  errorMsg.textContent = "Checking content quality...";
+
+  let qcResult;
+  try {
+    qcResult = await checkWithHuggingFace(text);
+  } catch (e) {
+    console.error("QC error:", e);
+    errorMsg.textContent = "Quality check failed. Try again.";
+    return;
+  }
+
+  if (!qcResult.ok) {
+    errorMsg.textContent = "Your wish contains inappropriate content.";
     return;
   }
 
@@ -44,6 +91,7 @@ addBtn.addEventListener("click", async () => {
   wishList.prepend(wishItem);
   input.value = "";
 });
+
 
 
 
@@ -72,3 +120,4 @@ async function loadWishes() {
     wishList.appendChild(wishItem);
   });
 }
+

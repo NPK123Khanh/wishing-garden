@@ -1,4 +1,8 @@
 const admin = require("firebase-admin");
+console.log(
+  "PRIVATE KEY STARTS WITH:",
+  process.env.FIREBASE_PRIVATE_KEY?.slice(0, 30)
+);
 
 if (!admin.apps.length) {
   admin.initializeApp({

@@ -17,6 +17,8 @@ exports.handler = async (event) => {
     );
 
     const result = await response.json();
+    console.log("HF RAW RESULT:", JSON.stringify(result, null, 2));
+
 
     // Hugging Face returns an array of labels with scores
     // We reject if toxicity > 0.7
@@ -42,3 +44,4 @@ exports.handler = async (event) => {
     };
   }
 };
+

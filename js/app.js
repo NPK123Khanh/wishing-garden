@@ -35,7 +35,7 @@ addBtn.addEventListener("click", async () => {
   // 1. Call AI QC
   let qcResult;
   try {
-    const res = await fetch("/.netlify/functions/qc", {
+    const res = await fetch("/api/qc", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
@@ -55,7 +55,7 @@ addBtn.addEventListener("click", async () => {
 
   // 2. Save to DB
   try {
-    const res = await fetch("/.netlify/functions/addWish", {
+    const res = await fetch("/api/addWish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
@@ -92,7 +92,7 @@ addBtn.addEventListener("click", async () => {
 // 🔹 LOAD ONLY 3 MOST RECENT FROM DATABASE
 async function loadWishes() {
   try {
-    const res = await fetch("/.netlify/functions/getWishes");
+    const res = await fetch("/api/getWishes");
     const data = await res.json();
 
     wishList.innerHTML = "";
@@ -109,3 +109,4 @@ async function loadWishes() {
     console.error("Failed to load wishes:", e);
   }
 }
+

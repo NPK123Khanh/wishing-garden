@@ -1,6 +1,5 @@
 const admin = require("firebase-admin");
 
-// 🔹 Initialize ONLY ONCE (important for Netlify)
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -13,7 +12,7 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-exports.handler = async () => {
+module.exports = async (req, res) => {
   try {
     const snapshot = await db
       .collection("wishes")
@@ -22,20 +21,11 @@ exports.handler = async () => {
       .get();
 
     const wishes = [];
-    snapshot.forEach(doc => {
-      wishes.push(doc.data());
-    });
+    snapshot.forEach(doc => wishes.push(doc.data()));
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ wishes }),
-    };
-
+    res.status(200).json({ wishes });
   } catch (err) {
     console.error("getWishes error:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
+    res.status(500).json({ error: err.message });
   }
 };

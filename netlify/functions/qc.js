@@ -5,7 +5,7 @@ exports.handler = async (event) => {
     const { text } = JSON.parse(event.body);
 
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/unitary/toxic-bert",
+      "https://router.huggingface.co/models/unitary/toxic-bert",
       {
         method: "POST",
         headers: {
@@ -44,4 +44,5 @@ exports.handler = async (event) => {
     };
   }
 };
+
 

@@ -5,33 +5,25 @@ if (!admin.apps.length) {
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
-    })
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    }),
   });
 }
 
 const db = admin.firestore();
 
-exports.handler = async (event) => {
+module.exports = async (req, res) => {
   try {
-    const { text } = JSON.parse(event.body);
+    const { text } = req.body;
 
     await db.collection("wishes").add({
-      text: text,
-      created_at: new Date()
+      text,
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true })
-    };
-
+    res.status(200).json({ success: true });
   } catch (err) {
-    console.error("Save error:", err);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ success: false, error: "Save failed" })
-    };
+    console.error("addWish error:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 };

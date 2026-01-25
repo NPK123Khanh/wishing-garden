@@ -219,11 +219,12 @@ body {
 
 .error-msg {
     grid-column: 8 / 12;
-    grid-row: 1 / 2;
+    grid-row: 2 / 3;
 
     color: red;
     font-size: 1rem;
 }
+
 
 
 

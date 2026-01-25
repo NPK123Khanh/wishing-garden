@@ -90,23 +90,42 @@ addBtn.addEventListener("click", async () => {
 });
 
 // 🔹 LOAD ONLY 3 MOST RECENT FROM DATABASE
+
+
 async function loadWishes() {
-  try {
-    const res = await fetch("/api/getWishes");
-    const data = await res.json();
+  const snapshot = await db
+    .collection("wishes")
+    .orderBy("created_at", "desc")
+    .limit(6)
+    .get();
 
-    wishList.innerHTML = "";
+  const wishes = [];
+  snapshot.forEach(doc => wishes.push(doc.data()));
 
-    data.wishes.forEach(wish => {
-      const wishItem = document.createElement("div");
-      wishItem.className = "wish-item";
-      wishItem.textContent = wish.text;
+  for (let i = 0; i < 6; i++) {
+    const box = document.getElementById(`wish-${i + 1}`);
 
-      wishList.appendChild(wishItem);
-    });
+    if (wishes[i]) {
+      box.textContent = wishes[i].text;
+      box.style.display = "block";
+      fitText(box, 12, 28);
+    } else {
+      box.textContent = "";
+      box.style.display = "none";
+    }
+  }
+}
 
-  } catch (e) {
-    console.error("Failed to load wishes:", e);
+
+
+
+function fitText(element, min = 12, max = 28) {
+  let size = max;
+  element.style.fontSize = size + "px";
+
+  while (size > min && element.scrollHeight > element.clientHeight) {
+    size--;
+    element.style.fontSize = size + "px";
   }
 }
 

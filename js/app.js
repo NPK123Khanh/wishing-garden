@@ -4,6 +4,9 @@ const input = document.getElementById("wishInput");
 const wishList = document.getElementById("wish-list");
 const errorMsg = document.getElementById("errorMsg");
 
+const HF_MODEL_URL =
+  "https://api-inference.huggingface.co/models/unitary/toxic-bert";
+
 // Function to check bad words
 async function containsBadWord(text) {
   const response = await fetch(HF_MODEL_URL, {
@@ -103,4 +106,5 @@ function fitText(element, min = 12, max = 28) {
     element.style.fontSize = size + "px";
   }
 }
+
 

@@ -1,4 +1,3 @@
-const fetch = require("node-fetch");
 
 const HF_API_URL = "https://router.huggingface.co/hf-inference/models/unitary/toxic-bert";
 const HF_TOKEN = process.env.HF_TOKEN;
@@ -41,3 +40,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Moderation failed" });
   }
 }
+

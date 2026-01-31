@@ -4,13 +4,24 @@ const input = document.getElementById("wishInput");
 const wishList = document.getElementById("wish-list");
 const errorMsg = document.getElementById("errorMsg");
 
-// List of banned words (customize this)
-const badWords = ["badword1", "badword2", "stupid", "hate"];
-
 // Function to check bad words
-function containsBadWord(text) {
-  const lowerText = text.toLowerCase();
-  return badWords.some(word => lowerText.includes(word));
+async function containsBadWord(text) {
+  const response = await fetch(HF_MODEL_URL, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${HF_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      inputs: text
+    })
+  });
+
+  const result = await response.json();
+  const toxicScore =
+    result?.[0]?.find(r => r.label === "toxic")?.score || 0;
+
+  return toxicScore > 0.7; // threshold (tweakable)
 }
 
 // Handle click
@@ -22,8 +33,18 @@ addBtn.addEventListener("click", async () => {
     return;
   }
 
-  if (containsBadWord(text)) {
-    errorMsg.textContent = "Your wish contains inappropriate words.";
+  try {
+    const hasBadWord = await containsBadWord(text);
+
+    if (hasBadWord) {
+      errorMsg.textContent =
+        "Your wish contains inappropriate or harmful language.";
+      return;
+    }
+  } catch (err) {
+    console.error("Moderation error:", err);
+    errorMsg.textContent =
+      "Content moderation service is unavailable.";
     return;
   }
 
@@ -31,14 +52,12 @@ addBtn.addEventListener("click", async () => {
 
   try {
     await saveWishToDB(text);
+    await loadWishes();
+    input.value = "";
   } catch (e) {
     console.error("Save error:", e);
     errorMsg.textContent = "Failed to save wish.";
-    return;
   }
-  await loadWishes();
-
-  input.value = "";
 });
 
 
@@ -84,3 +103,4 @@ function fitText(element, min = 12, max = 28) {
     element.style.fontSize = size + "px";
   }
 }
+

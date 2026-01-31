@@ -1,6 +1,5 @@
 
 const HF_API_URL = "https://router.huggingface.co/hf-inference/models/unitary/toxic-bert";
-const HF_TOKEN = process.env.HF_TOKEN;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -14,18 +13,28 @@ export default async function handler(req, res) {
   }
 
   try {
-    const hfRes = await fetch( HF_API_URL,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.HF_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ inputs: text })
-      }
-    );
+    const hfRes = await fetch(HF_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.HF_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: text })
+    });
+
+    if (!hfRes.ok) {
+      const errText = await hfRes.text();
+      console.error("HF HTTP ERROR:", hfRes.status, errText);
+      return res.status(500).json({ error: "HF request failed" });
+    }
 
     const data = await hfRes.json();
+
+    // Handle model loading case
+    if (data?.error) {
+      console.error("HF MODEL ERROR:", data.error);
+      return res.status(503).json({ error: "Model loading" });
+    }
 
     const toxicScore =
       data?.[0]?.find(r => r.label === "toxic")?.score || 0;
@@ -36,8 +45,7 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error("HF error:", err);
+    console.error("QC CRASH:", err);
     return res.status(500).json({ error: "Moderation failed" });
   }
 }
-

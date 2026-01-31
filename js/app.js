@@ -99,3 +99,7 @@ function fitText(element, min = 12, max = 28) {
     element.style.fontSize = size + "px";
   }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadWishes();
+});

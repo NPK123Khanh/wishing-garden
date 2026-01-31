@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     const hfRes = await fetch(HF_API_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.HF_API_KEY}`,
+        Authorization: `Bearer ${process.env.HF_TOKEN}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ inputs: text })
@@ -49,3 +49,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Moderation failed" });
   }
 }
+

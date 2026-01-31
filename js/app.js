@@ -1,11 +1,9 @@
 // Get elements
 const addBtn = document.getElementById("addWishBtn");
 const input = document.getElementById("wishInput");
-const wishList = document.getElementById("wish-list");
 const errorMsg = document.getElementById("errorMsg");
 
-
-// Function to check bad words
+// Function to check bad words (via Vercel API)
 async function containsBadWord(text) {
   const res = await fetch("/api/qc", {
     method: "POST",
@@ -18,14 +16,7 @@ async function containsBadWord(text) {
   }
 
   const data = await res.json();
-  return data.toxic;
-}
-
-  const result = await response.json();
-  const toxicScore =
-    result?.[0]?.find(r => r.label === "toxic")?.score || 0;
-
-  return toxicScore > 0.7; // threshold (tweakable)
+  return data.toxic === true;
 }
 
 // Handle click
@@ -64,15 +55,15 @@ addBtn.addEventListener("click", async () => {
   }
 });
 
-
+// Save to Firestore
 async function saveWishToDB(text) {
   await db.collection("wishes").add({
-    text: text,
+    text,
     created_at: new Date()
   });
 }
 
-
+// Load wishes
 async function loadWishes() {
   const snapshot = await db
     .collection("wishes")
@@ -85,6 +76,7 @@ async function loadWishes() {
 
   for (let i = 0; i < 6; i++) {
     const box = document.getElementById(`wish-${i + 1}`);
+    if (!box) continue;
 
     if (wishes[i]) {
       box.textContent = wishes[i].text;
@@ -97,7 +89,7 @@ async function loadWishes() {
   }
 }
 
-
+// Auto-fit text
 function fitText(element, min = 12, max = 28) {
   let size = max;
   element.style.fontSize = size + "px";
@@ -107,6 +99,3 @@ function fitText(element, min = 12, max = 28) {
     element.style.fontSize = size + "px";
   }
 }
-
-
-

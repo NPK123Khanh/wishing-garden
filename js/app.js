@@ -4,21 +4,22 @@ const input = document.getElementById("wishInput");
 const wishList = document.getElementById("wish-list");
 const errorMsg = document.getElementById("errorMsg");
 
-const HF_MODEL_URL =
-  "https://api-inference.huggingface.co/models/unitary/toxic-bert";
 
 // Function to check bad words
 async function containsBadWord(text) {
-  const response = await fetch(HF_MODEL_URL, {
+  const res = await fetch("/api/qc", {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${HF_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      inputs: text
-    })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
   });
+
+  if (!res.ok) {
+    throw new Error("Moderation failed");
+  }
+
+  const data = await res.json();
+  return data.toxic;
+}
 
   const result = await response.json();
   const toxicScore =
@@ -31,23 +32,23 @@ async function containsBadWord(text) {
 addBtn.addEventListener("click", async () => {
   const text = input.value.trim();
 
-  if (text === "") {
+  if (!text) {
     errorMsg.textContent = "Please write something first.";
     return;
   }
 
   try {
-    const hasBadWord = await containsBadWord(text);
+    const toxic = await containsBadWord(text);
 
-    if (hasBadWord) {
+    if (toxic) {
       errorMsg.textContent =
         "Your wish contains inappropriate or harmful language.";
       return;
     }
   } catch (err) {
-    console.error("Moderation error:", err);
+    console.error(err);
     errorMsg.textContent =
-      "Content moderation service is unavailable.";
+      "Content moderation service unavailable.";
     return;
   }
 
@@ -58,7 +59,7 @@ addBtn.addEventListener("click", async () => {
     await loadWishes();
     input.value = "";
   } catch (e) {
-    console.error("Save error:", e);
+    console.error(e);
     errorMsg.textContent = "Failed to save wish.";
   }
 });
@@ -106,5 +107,6 @@ function fitText(element, min = 12, max = 28) {
     element.style.fontSize = size + "px";
   }
 }
+
 
 
